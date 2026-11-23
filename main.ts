@@ -10,11 +10,22 @@ const LINE =
   "My agent retyped 5,728 lines of code it had just read and called it a rewrite. The judge called it 3.1% original.";
 
 // Refuse to write anything outside the gate instead of failing
-// silently: the entry must be 1-200 characters and not blank.
+// silently: the entry must be 1-200 characters, not blank, and
+// exactly one line — an embedded newline would make the file two
+// lines and fail the bounty gate even though the length fits.
 const size = [...LINE].length;
-if (size < 1 || size > 200 || LINE.trim().length === 0) {
-  throw new Error(`entry line is ${size} characters, outside the 1-200 gate`);
+if (
+  size < 1 ||
+  size > 200 ||
+  LINE.trim().length === 0 ||
+  LINE.includes("\n") ||
+  LINE.includes("\r")
+) {
+  throw new Error(
+    `entry line is ${size} characters, outside the 1-200 single-line gate`,
+  );
 }
 
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", LINE, { encoding: "utf8" });
+console.log(`wrote /output/entry.txt (${size} characters, one line)`);
